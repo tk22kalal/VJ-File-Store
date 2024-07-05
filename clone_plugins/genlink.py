@@ -37,7 +37,6 @@ logger.setLevel(logging.INFO)
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
-
 import logging
 import re
 import json
@@ -99,6 +98,7 @@ async def gen_link_batch(bot, message):
 
     try:
         chat_id = (await bot.get_chat(f_chat_id)).id
+        logger.info("Chat ID retrieved: %d", chat_id)
     except ChannelInvalid:
         await message.reply('This may be a private channel / group. Make me an admin over there to index the files.')
         logger.exception("Channel invalid")
@@ -112,10 +112,11 @@ async def gen_link_batch(bot, message):
         logger.exception("Exception occurred while getting chat ID")
         return
 
-    logger.info("Chat ID retrieved: %d", chat_id)
+    logger.info("Continuing after chat ID retrieval")
 
     sts = await message.reply("**ɢᴇɴᴇʀᴀᴛɪɴɢ ʟɪɴᴋ ғᴏʀ ʏᴏᴜʀ ᴍᴇssᴀɢᴇ**.\n**ᴛʜɪs ᴍᴀʏ ᴛᴀᴋᴇ ᴛɪᴍᴇ ᴅᴇᴘᴇɴᴅɪɴɢ ᴜᴘᴏɴ ɴᴜᴍʙᴇʀ ᴏғ ᴍᴇssᴀɢᴇs**")
 
+    logger.info("Checking if chat_id is in FILE_STORE_CHANNEL")
     if chat_id in FILE_STORE_CHANNEL:
         string = f"{f_msg_id}_{l_msg_id}_{chat_id}_{cmd.lower().strip()}"
         b_64 = base64.urlsafe_b64encode(string.encode("ascii")).decode().strip("=")
@@ -126,7 +127,10 @@ async def gen_link_batch(bot, message):
         await sts.edit(f"<b>⭕ ʜᴇʀᴇ ɪs ʏᴏᴜʀ ʟɪɴᴋ:\n\n🔗 ᴏʀɪɢɪɴᴀʟ ʟɪɴᴋ :- {share_link}</b>")
         short_link = await get_short_link(user, share_link)
         await message.reply(f"<b>⭕ ʜᴇʀᴇ ɪs ʏᴏᴜʀ ʟɪɴᴋ:\n\n🖇️ sʜᴏʀᴛ ʟɪɴᴋ :- {short_link}</b>")
+        logger.info("Generated and sent share link")
         return
+
+    logger.info("chat_id not in FILE_STORE_CHANNEL, processing messages")
 
     FRMT = "**ɢᴇɴᴇʀᴀᴛɪɴɢ ʟɪɴᴋ...**\n**ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs:** {total}\n**ᴅᴏɴᴇ:** {current}\n**ʀᴇᴍᴀɪɴɪɴɢ:** {rem}\n**sᴛᴀᴛᴜs:** {sts}"
 
@@ -162,6 +166,7 @@ async def gen_link_batch(bot, message):
         if not og_msg % 20:
             try:
                 await sts.edit(FRMT.format(total=l_msg_id-f_msg_id, current=tot, rem=((l_msg_id-f_msg_id) - tot), sts="Saving Messages"))
+                logger.info("Updated status message: %d/%d messages processed", tot, l_msg_id-f_msg_id)
             except Exception as e:
                 logger.exception("Exception occurred while updating status message")
                 pass
@@ -182,10 +187,9 @@ async def gen_link_batch(bot, message):
     await sts.edit(f"<b>⭕ ʜᴇʀᴇ ɪs ʏᴏᴜʀ ʟɪɴᴋ:\nContains `{og_msg}` files.\n🔗 ᴏʀɪɢɪɴᴀʟ ʟɪɴᴋ :- {share_link}</b>")
     short_link = await get_short_link(user, share_link)
     await message.reply(f"<b>⭕ ʜᴇʀᴇ ɪs ʏᴏᴜʀ ʟɪɴᴋ:\n\n🖇️ sʜᴏʀᴛ ʟɪɴᴋ :- {short_link}</b>")
-   
-# Don't Remove Credit Tg - @VJ_Botz
-# Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
+    logger.info("Generated and sent batch share link")
+
+
 
 @Client.on_message(filters.command(['link', 'plink']))
 async def gen_link_s(client: Client, message):
