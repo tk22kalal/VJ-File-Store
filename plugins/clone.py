@@ -94,14 +94,23 @@ async def delete_cloned_bot(client, message):
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 from pymongo import MongoClient
+from pyrogram import Client
+from tenacity import retry, wait_exponential, stop_after_attempt
+import asyncio
+import logging
+import socket
 
+mongo_client = MongoClient(MONGO_URL)
+mongo_db = mongo_client["cloned_vjbotz"]
+mongo_collection = mongo_db[DB_NAME]
+
+logger = logging.getLogger(__name__)
 
 @retry(wait=wait_exponential(multiplier=1, min=4, max=10), stop=stop_after_attempt(5))
 async def start_bot(ai):
     await ai.start()
 
 async def restart_bots():
-    logging.info("Restarting all bots........")
     bots = list(mongo_db.bots.find())
     for bot in bots:
         bot_token = bot['token']
@@ -112,5 +121,23 @@ async def restart_bots():
                 plugins={"root": "clone_plugins"},
             )
             await start_bot(ai)
-        except Exception as e:
+        except (asyncio.TimeoutError, socket.error) as e:
+            # Handle socket-related exceptions and retry
             continue
+        except Exception as e:
+            # Handle specific known errors if needed, e.g., AccessTokenExpired, AccessTokenInvalid
+            if "access token expired" in str(e).lower():
+                # Handle token refresh or recovery mechanism
+                continue
+            elif "access token invalid" in str(e).lower():
+                # Handle token refresh or recovery mechanism
+                continue
+            else:
+                # Handle other unexpected errors
+                continue
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(restart_bots())
+
