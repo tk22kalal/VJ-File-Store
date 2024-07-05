@@ -11,10 +11,13 @@ from pyrogram.types import Message
 from pyrogram.errors.exceptions.bad_request_400 import AccessTokenExpired, AccessTokenInvalid
 from config import API_ID, API_HASH, ADMINS, DB_NAME
 from config import DB_URI as MONGO_URL
+from tenacity import retry, wait_fixed, stop_after_attempt
 
 mongo_client = MongoClient(MONGO_URL)
 mongo_db = mongo_client["cloned_vjbotz"]
 mongo_collection = mongo_db[DB_NAME]
+
+logger = logging.getLogger(__name__)
 
 @Client.on_message(filters.command("clone") & filters.private)
 async def clone(client, message):
@@ -91,6 +94,11 @@ async def delete_cloned_bot(client, message):
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
+@retry(wait=wait_fixed(2), stop=stop_after_attempt(5), retry_error_callback=lambda _: logging.error("Failed to restart bot due to database lock."))
+async def start_bot(ai):
+    await ai.start()
+
+
 async def restart_bots():
     logging.info("Restarting all bots........")
     bots = list(mongo_db.bots.find())
@@ -103,6 +111,13 @@ async def restart_bots():
                 plugins={"root": "clone_plugins"},
             )
             await ai.start()
+        except sqlite3.OperationalError as e:
+            logger.warning(f"SQLite OperationalError encountered: {e}")
+            continue  # Skip to the next bot on OperationalError
         except Exception as e:
-            logging.exception(f"Error while restarting bot with token {bot_token}: {e}")
-
+            # Suppress warnings about already connected bots from being treated as errors
+            if "already connected" in str(e):
+                continue  # Skip to the next bot if already connected
+            else:
+                logger.error(f"Error while restarting bot with token {bot_token}: {e}")
+            continue
