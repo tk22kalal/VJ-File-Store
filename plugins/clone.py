@@ -96,7 +96,7 @@ async def delete_cloned_bot(client, message):
 from pymongo import MongoClient
 
 
-@retry(wait=wait_exponential(multiplier=1, min=4, max=10), stop=stop_after_attempt(5), retry_error_callback=lambda _: logging.error("Failed to restart bot due to transient error."))
+@retry(wait=wait_exponential(multiplier=1, min=4, max=10), stop=stop_after_attempt(5))
 async def start_bot(ai):
     await ai.start()
 
