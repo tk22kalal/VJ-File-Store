@@ -93,12 +93,12 @@ async def delete_cloned_bot(client, message):
 
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
-# Ask Doubt on telegram @KingVJ01
+from pymongo import MongoClient
 
-@retry(wait=wait_fixed(2), stop=stop_after_attempt(5), retry_error_callback=lambda _: logging.error("Failed to restart bot due to database lock."))
+
+@retry(wait=wait_exponential(multiplier=1, min=4, max=10), stop=stop_after_attempt(5), retry_error_callback=lambda _: logging.error("Failed to restart bot due to transient error."))
 async def start_bot(ai):
     await ai.start()
-
 
 async def restart_bots():
     logging.info("Restarting all bots........")
@@ -111,14 +111,7 @@ async def restart_bots():
                 bot_token=bot_token,
                 plugins={"root": "clone_plugins"},
             )
-            await ai.start()
-        except sqlite3.OperationalError as e:
-            logger.warning(f"SQLite OperationalError encountered: {e}")
-            continue  # Skip to the next bot on OperationalError
+            await start_bot(ai)
         except Exception as e:
-            # Suppress warnings about already connected bots from being treated as errors
-            if "already connected" in str(e):
-                continue  # Skip to the next bot if already connected
-            else:
-                logger.error(f"Error while restarting bot with token {bot_token}: {e}")
+            logger.error(f"Error while restarting bot with token {bot_token}: {e}")
             continue
