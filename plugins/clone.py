@@ -12,6 +12,7 @@ from pyrogram.errors.exceptions.bad_request_400 import AccessTokenExpired, Acces
 from config import API_ID, API_HASH, ADMINS, DB_NAME
 from config import DB_URI as MONGO_URL
 from tenacity import retry, wait_fixed, stop_after_attempt
+import sqlite3
 
 mongo_client = MongoClient(MONGO_URL)
 mongo_db = mongo_client["cloned_vjbotz"]
