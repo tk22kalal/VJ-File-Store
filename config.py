@@ -30,8 +30,8 @@ def is_enabled(value, default):
 # Ask Doubt on telegram @KingVJ01
 from os import environ
 
-API = environ.get("SHORTNER_API", "") # shortlink api
-URL = environ.get("SHORTNER_URL", "") # shortlink domain without https://
+API = environ.get("B_SHORTNER_API", "") # shortlink api
+URL = environ.get("B_SHORTNER_SITE", "") # shortlink domain without https://
 VERIFY_TUTORIAL = environ.get("VERIFY_TUTORIAL", "") # how to open link 
 
 VERIFY = environ.get("VERIFY", "True") # set True Or False and make sure spelling is correct and first letter capital.      
