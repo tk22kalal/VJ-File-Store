@@ -113,5 +113,4 @@ async def restart_bots():
             )
             await start_bot(ai)
         except Exception as e:
-            logger.error(f"Error while restarting bot with token {bot_token}: {e}")
             continue
