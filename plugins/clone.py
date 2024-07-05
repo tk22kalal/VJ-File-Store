@@ -13,6 +13,10 @@ from config import API_ID, API_HASH, ADMINS, DB_NAME
 from config import DB_URI as MONGO_URL
 from tenacity import retry, wait_fixed, stop_after_attempt, wait_exponential
 import sqlite3
+from pymongo import MongoClient
+import asyncio
+import socket
+
 
 mongo_client = MongoClient(MONGO_URL)
 mongo_db = mongo_client["cloned_vjbotz"]
@@ -100,11 +104,8 @@ import asyncio
 import logging
 import socket
 
-mongo_client = MongoClient(MONGO_URL)
-mongo_db = mongo_client["cloned_vjbotz"]
-mongo_collection = mongo_db[DB_NAME]
 
-logger = logging.getLogger(__name__)
+
 
 @retry(wait=wait_exponential(multiplier=1, min=4, max=10), stop=stop_after_attempt(5))
 async def start_bot(ai):
