@@ -48,7 +48,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
 import base64
 
 # Replace these values with your own
-p_channel_id = "-1002249946503"
+p_channel_id = '-1002249946503'
 
 def encode_link(file_id: str) -> str:
     encoded_bytes = base64.urlsafe_b64encode(file_id.encode("ascii"))
