@@ -1,6 +1,34 @@
 # Don't Remove Credit @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot @Tech_VJ
 # Ask Doubt on telegram @KingVJ01
+import asyncio
+from pyrogram import Client, filters, enums
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
+import base64
+
+# Replace these values with your own
+p_channel_id = "-1002249946503"
+
+def encode_link(file_id: str) -> str:
+    encoded_bytes = base64.urlsafe_b64encode(file_id.encode("ascii"))
+    encoded_str = encoded_bytes.decode("ascii").strip("=")
+    return encoded_str
+
+@Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
+async def handle_file(client: Client, message: Message):
+    file_id = message.document.file_id if message.document else message.video.file_id if message.video else message.audio.file_id
+    encoded_link = encode_link(file_id)
+    bot_username = (await client.get_me()).username
+    share_link = f"https://t.me/{bot_username}?start={encoded_link}"
+
+    # Send the link to the user
+    await message.reply(f"Here is your link: {share_link}")
+
+    # Send the file and link information to the public channel
+    caption = f"File: {file_id}\nLink: {share_link}"
+    await client.send_message(chat_id=p_channel_id, text=caption)
+
+
 
 import re
 from pyrogram import filters, Client, enums
